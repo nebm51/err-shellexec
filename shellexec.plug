@@ -1,0 +1,9 @@
+[Core]
+Name = ShellExec
+Module = shellexec
+
+[Documentation]
+Description = A plugin for Err, that allows users to run shell scripts and get the results in chat
+
+[Python]
+Version = 2+
