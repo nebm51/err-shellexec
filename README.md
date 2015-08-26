@@ -37,3 +37,6 @@ TODO
 
 Create a way for the executed scripts to communicate specific info back to the bot for
 relay to the chat channel in real time.
+
+
+This plugin is still a work in progress, but has reached a vaguely usable state.
