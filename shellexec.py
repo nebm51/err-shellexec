@@ -12,6 +12,11 @@ import unicodedata
 # Logger for the shell_exec command
 log = logging.getLogger("shell_exec")
 
+def unicode2string(ustring):
+	if type(ustring) == type(u""):
+		return unicodedata.normalize('NFKD', ustring).encode('ascii','ignore')
+	return ustring
+
 class ShellExec(BotPlugin):
 	"""
 	Class that dynamically creates bot actions based on a set of shell scripts
@@ -64,7 +69,7 @@ class ShellExec(BotPlugin):
 		commands = {}
 		for file in files:
 			file, _ = file.split(".")
-			file = unicodedata.normalize('NFKD', file).encode('ascii','ignore')
+			file = unicode2string(file)
 			commands[file] = self._create_method(file)
 
 		plugin_class = type("ShellCmd", (BotPlugin,), commands)
