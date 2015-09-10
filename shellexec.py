@@ -3,19 +3,16 @@
 from errbot import BotPlugin, botcmd
 from os import listdir
 from os.path import isfile, join
+from itertools import chain
 import logging
 import subprocess
 import time
 import datetime
-import unicodedata
 
 # Logger for the shell_exec command
 log = logging.getLogger("shell_exec")
-
-def unicode2string(ustring):
-	if type(ustring) == type(u""):
-		return unicodedata.normalize('NFKD', ustring).encode('ascii','ignore')
-	return ustring
+CONFIG_TEMPLATE = { 'SCRIPT_PATH': u'/usr/local/nsg/configuration/scripts/',
+		    'SCRIPT_LOGS': u'/usr/local/nsg/configuration/script_logs/', }
 
 class ShellExec(BotPlugin):
 	"""
@@ -25,11 +22,17 @@ class ShellExec(BotPlugin):
 	"""
 	min_err_version = '2.0.0' # Optional, but recommended
 
+
 	def __init__(self):
+		"""
+		Constructor
+		"""
 		super(ShellExec, self).__init__()
 		self.dynamic_plugin = None
 
 	def activate(self):
+		"""Activate this plugin, 
+		"""
 		super(ShellExec, self).activate()
 		if self.config is not None:
 			self._load_shell_commands()
@@ -37,6 +40,16 @@ class ShellExec(BotPlugin):
 	def deactivate(self):
 		super(ShellExec, self).deactivate()
 		self._bot.remove_commands_from(self.dynamic_plugin)
+	
+	def configure(self, configuration):
+		if configuration is not None and configuration != {}:
+			config = dict(chain(CONFIG_TEMPLATE.items(), configuration.items()))
+		else:
+			config = CONFIG_TEMPLATE
+		super(ShellExec, self).configure(config)
+
+	def check_configuration(self, configuration):
+		pass
 
 	@botcmd
 	def unloadcommands(self, msg, args):
@@ -69,7 +82,6 @@ class ShellExec(BotPlugin):
 		commands = {}
 		for file in files:
 			file, _ = file.split(".")
-			file = unicode2string(file)
 			commands[file] = self._create_method(file)
 
 		plugin_class = type("ShellCmd", (BotPlugin,), commands)
@@ -88,7 +100,7 @@ class ShellExec(BotPlugin):
 		"""
 		os_cmd = join( self.config['SCRIPT_PATH'], command_name + ".sh" )
 		log.debug("Getting help info for '{}'".format(os_cmd))
-		return subprocess.check_output([ os_cmd , "--help" ])
+		return subprocess.check_output([ os_cmd , "--help" ]).decode('utf-8')
 
 	def _create_method(self, command_name):
 		"""
@@ -124,5 +136,4 @@ class ShellExec(BotPlugin):
 
 	def get_configuration_template(self):
 		"""Defines the configuration structure this plugin supports"""
-		return { 	'SCRIPT_PATH': u'/tmp/scripts',
-		            'SCRIPT_LOGS': u'/tmp/script_logs', }
+		return CONFIG_TEMPLATE
