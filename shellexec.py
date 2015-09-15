@@ -8,6 +8,7 @@ import logging
 import subprocess
 import time
 import datetime
+import shlex
 
 # Logger for the shell_exec command
 log = logging.getLogger("shell_exec")
@@ -159,6 +160,8 @@ class ShellExec(BotPlugin):
 			log_file_name = join(self.command_logs_path, "{}-{}-{}.log".format(command_name, tstamp, user) )
 			cmd_args = [os_cmd]
 			if len(args):
+				if isinstance(args, str):
+					args = shlex.split(args)
 				cmd_args = cmd_args + args
 			try:
 				log.debug( "Running command [{}]".format( os_cmd ) )
