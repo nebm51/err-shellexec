@@ -61,34 +61,6 @@ class ShellExec(BotPlugin):
         """
         return CONFIG_TEMPLATE
 
-    def configure(self, configuration):
-        """
-        Handle partial configuration changes.
-        """
-        if configuration is not None and configuration != {}:
-            config = dict(chain(CONFIG_TEMPLATE.items(), configuration.items()))
-        else:
-            config = CONFIG_TEMPLATE
-            super(ShellExec, self).configure(config)
-
-    def check_configuration(self, configuration):
-        """
-        This should actually validate the configuration but does not yet.
-        """
-        pass
-
-    @property
-    def script_path(self):
-        return self.config['SCRIPT_PATH']
-
-    @property
-    def script_logs(self):
-        return self.config['SCRIPT_LOGS']
-
-    @property
-    def notify_string(self):
-        return self.config['NOTIFY_STRING']
-
     @botcmd
     def cmdunload(self, msg, args):
         """
@@ -106,8 +78,6 @@ class ShellExec(BotPlugin):
         current set of scripts.
         """
         self.log.debug("Reloading ShellExec Scripts")
-        self.log.debug(dir(self))
-        self.log.debug(type(self))
         if self.config is not None:
             yield "Checking for available commands."
             self._bot.remove_commands_from(self.dynamic_plugin)
@@ -125,9 +95,8 @@ class ShellExec(BotPlugin):
         methods and add that to the bot.
         """
 
-        load_path = self.script_path
         # Read the files
-        files = [f for f in listdir(load_path) if isfile(join(load_path, f)) and f.endswith('.sh')]
+        files = [f for f in listdir(self.config['SCRIPT_PATH']) if isfile(join(self.config['SCRIPT_PATH'])) and f.endswith('.sh')]
         commands = {}
 
         # Create a method on the commands object for each script.
@@ -137,8 +106,8 @@ class ShellExec(BotPlugin):
 
         plugin_class = type("ShellCmd", (BotPlugin, ), commands)
         plugin_class.__errdoc__ = 'The ShellCmd plugin is created and managed by the ShellExec plugin.'
-        plugin_class.command_path = self.script_path
-        plugin_class.command_logs_path = self.script_logs
+        plugin_class.command_path = self.config['SCRIPT_PATH']
+        plugin_class.command_logs_path = self.config['SCRIPT_LOGS']
 
         self.dynamic_plugin = plugin_class(self._bot)
         self.log.debug("Registering Dynamic Plugin: %s" % (self.dynamic_plugin))
@@ -149,7 +118,7 @@ class ShellExec(BotPlugin):
         Run the script with the --help option and capture the output to be used
         as its help text in chat.
         """
-        os_cmd = join(self.script_path, command_name + ".sh")
+        os_cmd = join(self.config['SCRIPT_PATH'], command_name + ".sh")
         log.debug("Getting help info for '{}'".format(os_cmd))
         return subprocess.check_output([os_cmd, "--help"]).decode('utf-8')
 
@@ -159,7 +128,7 @@ class ShellExec(BotPlugin):
         """
         self.log.debug("Adding shell command '{}'".format(command_name))
 
-        def new_method(self, msg, args, command_name=command_name, notify_string=self.notify_string):
+        def new_method(self, msg, args, command_name=command_name, notify_string=self.config['NOTIFY_STRING']):
             # Get who ran the command
             user = msg.frm.node
             # The full command to run
