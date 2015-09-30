@@ -94,13 +94,15 @@ class ShellExec(BotPlugin):
         Once done, generate an object out of a dictionary of the dynamically created
         methods and add that to the bot.
         """
-
+        script_path = self.config['SCRIPT_PATH']
+        self.log.info("Loading scripts from {}".format(script_path))
         # Read the files
-        files = [f for f in listdir(self.config['SCRIPT_PATH']) if isfile(join(self.config['SCRIPT_PATH'])) and f.endswith('.sh')]
+        files = [f for f in listdir(script_path) if isfile(join(script_path, f)) and f.endswith('.sh')]
         commands = {}
 
         # Create a method on the commands object for each script.
         for file in files:
+            self.log.debug("Processing file [%s" % (file))
             file, _ = file.split(".")
             commands[file] = self._create_method(file)
 
