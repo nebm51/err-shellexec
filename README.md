@@ -10,7 +10,7 @@ Config options
 ==============
 
 * SCRIPT_PATH: The path on the file system where the scripts reside 
-* SCRIP_LOGS: The path on the file system where logs of each script run should reside.
+* SCRIPT_LOGS: The path on the file system where logs of each script run should reside.
 
 
 Example
