@@ -15,10 +15,11 @@ import procrun
 # Logger for the shell_exec command
 log = logging.getLogger("shell_exec")
 CONFIG_TEMPLATE = {
-    'SCRIPT_PATH': './plugins/err-shellexec/handlers/',
-    'SCRIPT_LOGS': './plugins/err-shellexec/handlers/logs',
-    'NOTIFY_STRING': 'NOTIFY:',
+'SCRIPT_PATH': './plugins/err-shellexec/handlers/',
+'SCRIPT_LOGS': './plugins/err-shellexec/handlers/logs',
+'NOTIFY_STRING': 'NOTIFY',
 }
+
 
 def status_to_string(exit_code):
     if exit_code == 0:
@@ -31,20 +32,20 @@ class ShellExec(BotPlugin):
     in the form of command_action.sh
     ex. deploy_emp.yml
     """
-    min_err_version = '3.0.0'  # Optional, but recommended
+    min_err_version = '4.0.0'  # Optional, but recommended
 
-    def __init__(self):
+    def __init__(self, bot):
         """
         Constructor
         """
-        super(ShellExec, self).__init__()
+        super().__init__(bot)
         self.dynamic_plugin = None
 
     def activate(self):
         """
         Activate this plugin,
         """
-        super(ShellExec, self).activate()
+        super().activate()
         if self.config is not None:
             self._load_shell_commands()
 
@@ -52,7 +53,7 @@ class ShellExec(BotPlugin):
         """
         Deactivate this plugin
         """
-        super(ShellExec, self).deactivate()
+        super().deactivate()
         self._bot.remove_commands_from(self.dynamic_plugin)
 
     def get_configuration_template(self):
@@ -60,6 +61,7 @@ class ShellExec(BotPlugin):
         Defines the configuration structure this plugin supports
         """
         return CONFIG_TEMPLATE
+#        return {'SCRIPT_PATH': './plugins/err-shellexec/handlers/','SCRIPT_LOGS': './plugins/err-shellexec/handlers/logs','NOTIFY_STRING': 'NOTIFY'}
 
     @botcmd
     def cmdunload(self, msg, args):
@@ -70,6 +72,10 @@ class ShellExec(BotPlugin):
         if self.dynamic_plugin is not None:
             self._bot.remove_commands_from(self.dynamic_plugin)
         return ("Done unloading commands.")
+
+    @botcmd
+    def printconfig(self, msg, args):
+        return ("Config is: " + str(self.config) )
 
     @botcmd
     def rehash(self, msg, args):
@@ -132,7 +138,7 @@ class ShellExec(BotPlugin):
 
         def new_method(self, msg, args, command_name=command_name, notify_string=self.config['NOTIFY_STRING']):
             # Get who ran the command
-            user = msg.frm.node
+            user = msg.frm
             # The full command to run
             os_cmd = join(self.command_path, command_name + ".sh")
             proc = procrun.ProcRun(os_cmd, self.command_path, self.command_logs_path)

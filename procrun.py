@@ -36,7 +36,7 @@ class ProcRun(object):
         """Open the command log file """
         tstamp = datetime.fromtimestamp(time.time()).strftime(self.time_format)
         log_file_name = os.path.join(self.log_path, "{}-{}-{}.log".format(
-            os.path.basename(self.cmd), tstamp, user))
+            os.path.basename(self.cmd), tstamp, str(user.nick) + str(user.room)))
         print(log_file_name)
         return open(log_file_name, "wb", 0)
 
